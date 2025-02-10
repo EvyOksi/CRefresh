@@ -1,98 +1,105 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roblox User Info</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background: radial-gradient(circle, rgba(44, 44, 122, 1) 0%, rgba(0, 255, 255, 0.8) 100%);
-            color: white;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-            animation: backgroundAnimation 5s ease-in-out infinite;
-        }
+// Log function for the developer console
+function logToConsole(message) {
+    const consoleOutput = document.getElementById('consoleOutput');
+    consoleOutput.value += message + "\n"; // Append message
+    consoleOutput.scrollTop = consoleOutput.scrollHeight; // Auto-scroll
+}
 
-        @keyframes backgroundAnimation {
-            0% { background: radial-gradient(circle, rgba(44, 44, 122, 1) 0%, rgba(0, 255, 255, 0.8) 100%); }
-            50% { background: radial-gradient(circle, rgba(0, 0, 255, 1) 0%, rgba(0, 255, 255, 0.8) 100%); }
-            100% { background: radial-gradient(circle, rgba(44, 44, 122, 1) 0%, rgba(0, 255, 255, 0.8) 100%); }
-        }
+// Unlock the developer console after entering the correct password
+document.getElementById('unlockConsoleBtn').addEventListener('click', function () {
+    const password = document.getElementById('consolePassword').value;
+    if (password === '2010') {
+        document.getElementById('devConsole').style.display = 'block';
+        logToConsole('Developer Console Unlocked');
+    } else {
+        logToConsole('Incorrect Password');
+    }
+});
 
-        h2 {
-            margin-top: 50px;
-            font-size: 2.5rem;
-        }
+// Fetch Roblox profile data
+document.getElementById('fetchButton').addEventListener('click', function () {
+    let username = document.getElementById('username').value;
+    logToConsole(`Fetching data for username: ${username}`);
 
-        input[type="text"] {
-            padding: 10px;
-            margin-top: 20px;
-            width: 250px;
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+    if (!username) {
+        logToConsole('Please enter a valid username');
+        return;
+    }
 
-        button {
-            padding: 10px 20px;
-            font-size: 1rem;
-            margin-top: 10px;
-            background-color: #2575fc;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+    // Start Loading Feedback
+    logToConsole('Fetching data...');
+    document.getElementById('fetchButton').innerText = "Loading..."; // Change button text
 
-        button:hover {
-            background-color: #6a11cb;
-        }
+    // Fetch user ID from Roblox API based on the username
+    const apiUrl = `https://users.roblox.com/v1/usernames/users?usernames=${username}`;
 
-        #loading {
-            font-size: 1.5rem;
-            margin-top: 20px;
-        }
+    fetch(apiUrl)
+        .then(response => {
+            if (!response.ok) {
+                logToConsole(`Error: ${response.status} - ${response.statusText}`);
+                document.getElementById('fetchButton').innerText = "Fetch Profile";
+                return;
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data && data.data && data.data.length > 0) {
+                const user = data.data[0];
+                logToConsole('Data fetched successfully');
+                logToConsole(`Display Name: ${user.displayName}`);
+                logToConsole(`Username: ${user.username}`);
+                logToConsole(`Avatar URL: ${user.avatarUrl}`);
 
-        #userInfo {
-            margin-top: 30px;
-            animation: fadeIn 1s ease-in-out;
-        }
+                // Additional API calls (followers count, etc.)
+                fetchFollowersCount(user.id);
+                fetchUserPremiumStatus(user.id);
+            } else {
+                logToConsole('User not found');
+                document.getElementById('fetchButton').innerText = "Fetch Profile";
+            }
+        })
+        .catch(error => {
+            logToConsole('Error fetching data');
+            console.error('Error:', error);
+            document.getElementById('fetchButton').innerText = "Fetch Profile";
+        });
+});
 
-        img {
-            border-radius: 50%;
-            width: 150px;
-            height: 150px;
-            margin: 20px 0;
-        }
+// Fetch Followers count
+function fetchFollowersCount(userId) {
+    const followersUrl = `https://v1.users.roblox.com/v1/users/${userId}/followers/count`;
 
-        .user-details {
-            font-size: 1.2rem;
-            margin: 10px 0;
-        }
+    fetch(followersUrl)
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.count !== undefined) {
+                logToConsole(`Followers: ${data.count}`);
+            } else {
+                logToConsole('Error fetching followers count');
+            }
+        })
+        .catch(error => {
+            logToConsole('Error fetching followers count');
+            console.error('Error:', error);
+        });
+}
 
-        .error-message {
-            color: #f44336;
-        }
+// Fetch Premium Status
+function fetchUserPremiumStatus(userId) {
+    const premiumUrl = `https://premiumfeatures.roblox.com/v1/users/${userId}/validate-membership`;
 
-        @keyframes fadeIn {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
-        }
-    </style>
-</head>
-<body>
-
-    <h2>Enter Roblox Username</h2>
-    <input type="text" id="username" placeholder="Enter username">
-    <button onclick="fetchRobloxData()">Get Info</button>
-    
-    <div id="loading" style="display: none;">Loading...</div>
-    <div id="userInfo"></div>
-
-    <script src="script.js"></script>
-</body>
-</html>
+    fetch(premiumUrl)
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.isPremium !== undefined) {
+                const status = data.isPremium ? 'Premium' : 'Not Premium';
+                logToConsole(`Premium Status: ${status}`);
+            } else {
+                logToConsole('Error fetching premium status');
+            }
+        })
+        .catch(error => {
+            logToConsole('Error fetching premium status');
+            console.error('Error:', error);
+        });
+}
