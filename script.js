@@ -1,62 +1,98 @@
-async function fetchRobloxData() {
-    const username = document.getElementById("username").value;
-    const userInfoDiv = document.getElementById("userInfo");
-    const loadingDiv = document.getElementById("loading");
-
-    if (!username) {
-        userInfoDiv.innerHTML = "Please enter a username.";
-        return;
-    }
-
-    // Show loading screen and clear previous results
-    loadingDiv.style.display = "block";
-    userInfoDiv.innerHTML = "";
-
-    try {
-        // Fetch user ID using correct Roblox API
-        let userRes = await fetch(`https://users.roblox.com/v1/usernames/users`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ usernames: [username], excludeBannedUsers: false })
-        });
-
-        let userData = await userRes.json();
-        if (!userData.data.length) {
-            userInfoDiv.innerHTML = "User not found.";
-            loadingDiv.style.display = "none";
-            return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox User Info</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: radial-gradient(circle, rgba(44, 44, 122, 1) 0%, rgba(0, 255, 255, 0.8) 100%);
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            animation: backgroundAnimation 5s ease-in-out infinite;
         }
 
-        let userId = userData.data[0].id;
+        @keyframes backgroundAnimation {
+            0% { background: radial-gradient(circle, rgba(44, 44, 122, 1) 0%, rgba(0, 255, 255, 0.8) 100%); }
+            50% { background: radial-gradient(circle, rgba(0, 0, 255, 1) 0%, rgba(0, 255, 255, 0.8) 100%); }
+            100% { background: radial-gradient(circle, rgba(44, 44, 122, 1) 0%, rgba(0, 255, 255, 0.8) 100%); }
+        }
 
-        // Fetch user profile, avatar, followers, and following counts concurrently
-        let [profileRes, avatarRes, followersRes, followingRes] = await Promise.all([
-            fetch(`https://users.roblox.com/v1/users/${userId}`),
-            fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${userId}&size=150x150&format=Png&isCircular=false`),
-            fetch(`https://friends.roblox.com/v1/users/${userId}/followers/count`),
-            fetch(`https://friends.roblox.com/v1/users/${userId}/followings/count`)
-        ]);
+        h2 {
+            margin-top: 50px;
+            font-size: 2.5rem;
+        }
 
-        let profileData = await profileRes.json();
-        let avatarData = await avatarRes.json();
-        let followersData = await followersRes.json();
-        let followingData = await followingRes.json();
+        input[type="text"] {
+            padding: 10px;
+            margin-top: 20px;
+            width: 250px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
 
-        let avatarUrl = avatarData.data[0]?.imageUrl || "";
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            margin-top: 10px;
+            background-color: #2575fc;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
 
-        // Hide loading screen and show fetched data
-        loadingDiv.style.display = "none";
-        userInfoDiv.innerHTML = `
-            <div class="user-details">
-                <h3>${profileData.displayName} (@${profileData.name})</h3>
-                <img src="${avatarUrl}" alt="Avatar"><br>
-                <p>Followers: ${followersData.count}</p>
-                <p>Following: ${followingData.count}</p>
-            </div>
-        `;
-    } catch (error) {
-        userInfoDiv.innerHTML = "Error fetching data.";
-        loadingDiv.style.display = "none";
-        console.error(error);
-    }
-}
+        button:hover {
+            background-color: #6a11cb;
+        }
+
+        #loading {
+            font-size: 1.5rem;
+            margin-top: 20px;
+        }
+
+        #userInfo {
+            margin-top: 30px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        img {
+            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+            margin: 20px 0;
+        }
+
+        .user-details {
+            font-size: 1.2rem;
+            margin: 10px 0;
+        }
+
+        .error-message {
+            color: #f44336;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Enter Roblox Username</h2>
+    <input type="text" id="username" placeholder="Enter username">
+    <button onclick="fetchRobloxData()">Get Info</button>
+    
+    <div id="loading" style="display: none;">Loading...</div>
+    <div id="userInfo"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
