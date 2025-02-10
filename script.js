@@ -13,7 +13,7 @@ async function fetchRobloxData() {
     userInfoDiv.innerHTML = "";
 
     try {
-        // Fetch user ID
+        // Fetch user ID using correct Roblox API
         let userRes = await fetch(`https://users.roblox.com/v1/usernames/users`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -47,10 +47,12 @@ async function fetchRobloxData() {
         // Hide loading screen and show fetched data
         loadingDiv.style.display = "none";
         userInfoDiv.innerHTML = `
-            <h3>${profileData.displayName} (@${profileData.name})</h3>
-            <img src="${avatarUrl}" alt="Avatar"><br>
-            <p>Followers: ${followersData.count}</p>
-            <p>Following: ${followingData.count}</p>
+            <div class="user-details">
+                <h3>${profileData.displayName} (@${profileData.name})</h3>
+                <img src="${avatarUrl}" alt="Avatar"><br>
+                <p>Followers: ${followersData.count}</p>
+                <p>Following: ${followingData.count}</p>
+            </div>
         `;
     } catch (error) {
         userInfoDiv.innerHTML = "Error fetching data.";
