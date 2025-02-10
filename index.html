@@ -1,36 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roblox Profile Fetcher</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1e1e1e;
+            color: #fff;
+        }
 
+        /* Developer Console Styling */
+        #devConsole {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            display: none; /* Hidden by default */
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        #devConsole textarea {
+            width: 100%;
+            height: 80%;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 5px;
+            padding: 10px;
+            resize: none;
+            font-family: monospace;
+        }
+
+        #devConsole input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background-color: #333;
+            color: white;
+        }
+
+        #devConsole button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #devConsole button:hover {
+            background-color: #45a049;
+        }
+
+        /* Main button and input styling */
+        #fetchButton {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 20px;
+        }
+
+        #fetchButton:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
 <body>
-    <div class="container">
-        <!-- Heading -->
-        <h1>Roblox Profile Fetcher</h1>
-        
-        <!-- Input box and Button -->
-        <div class="input-container">
-            <input type="text" id="username" placeholder="Enter Roblox Username" class="input-box">
-            <button onclick="fetchRobloxData()" class="fetch-btn">Fetch Data</button>
-        </div>
-        
-        <!-- Loading Animation -->
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
-            <p>Loading...</p>
-        </div>
-        
-        <!-- User Information Display -->
-        <div id="userInfo"></div>
+
+    <!-- Main content -->
+    <input type="text" id="username" placeholder="Enter Roblox Username" style="padding: 10px; width: 300px; margin: 20px;">
+    <button id="fetchButton">Fetch Profile</button>
+
+    <!-- Developer Console -->
+    <div id="devConsole">
+        <input type="password" id="consolePassword" placeholder="Enter Password" />
+        <button id="unlockConsoleBtn">Unlock Console</button>
+        <textarea id="consoleOutput" readonly placeholder="Console output will appear here..."></textarea>
     </div>
 
-    <!-- JavaScript -->
-    <script src="script.js"></script>
-</body>
+    <script>
+        // Log function for the developer console
+        function logToConsole(message) {
+            const consoleOutput = document.getElementById('consoleOutput');
+            consoleOutput.value += message + "\n"; // Append message
+            consoleOutput.scrollTop = consoleOutput.scrollHeight; // Auto-scroll
+        }
 
+        // Unlock the developer console after entering the correct password
+        document.getElementById('unlockConsoleBtn').addEventListener('click', function () {
+            const password = document.getElementById('consolePassword').value;
+            if (password === '2010') {
+                document.getElementById('devConsole').style.display = 'block';
+                logToConsole('Developer Console Unlocked');
+            } else {
+                logToConsole('Incorrect Password');
+            }
+        });
+
+        // Fetch Roblox profile data
+        document.getElementById('fetchButton').addEventListener('click', function () {
+            let username = document.getElementById('username').value;
+            logToConsole(`Fetching data for username: ${username}`);
+
+            if (!username) {
+                logToConsole('Please enter a valid username');
+                return;
+            }
+
+            const apiUrl = `https://users.roblox.com/v1/usernames/users?usernames=${username}`;
+
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        logToConsole(`Error: ${response.status} - ${response.statusText}`);
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.data && data.data.length > 0) {
+                        const user = data.data[0];
+                        logToConsole('Data fetched successfully');
+                        logToConsole(`Display Name: ${user.displayName}`);
+                        logToConsole(`Username: ${user.username}`);
+                        logToConsole(`Avatar URL: ${user.avatarUrl}`);
+                    } else {
+                        logToConsole('User not found');
+                    }
+                })
+                .catch(error => {
+                    logToConsole('Error fetching data');
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+
+</body>
 </html>
