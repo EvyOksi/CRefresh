@@ -11,6 +11,11 @@
             padding: 0;
             background-color: #1e1e1e;
             color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
         }
 
         /* Developer Console Styling */
@@ -22,7 +27,7 @@
             height: 300px;
             background-color: rgba(0, 0, 0, 0.7);
             padding: 10px;
-            display: none; /* Hidden by default */
+            display: none;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
@@ -78,77 +83,32 @@
         #fetchButton:hover {
             background-color: #45a049;
         }
+
+        /* Username input styling */
+        #username {
+            padding: 10px;
+            width: 300px;
+            margin: 20px;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background-color: #333;
+            color: white;
+        }
     </style>
 </head>
 <body>
 
     <!-- Main content -->
-    <input type="text" id="username" placeholder="Enter Roblox Username" style="padding: 10px; width: 300px; margin: 20px;">
+    <input type="text" id="username" placeholder="Enter Roblox Username">
     <button id="fetchButton">Fetch Profile</button>
 
     <!-- Developer Console -->
     <div id="devConsole">
-        <input type="password" id="consolePassword" placeholder="Enter Password" />
+        <input type="password" id="consolePassword" placeholder="Enter Password">
         <button id="unlockConsoleBtn">Unlock Console</button>
         <textarea id="consoleOutput" readonly placeholder="Console output will appear here..."></textarea>
     </div>
 
-    <script>
-        // Log function for the developer console
-        function logToConsole(message) {
-            const consoleOutput = document.getElementById('consoleOutput');
-            consoleOutput.value += message + "\n"; // Append message
-            consoleOutput.scrollTop = consoleOutput.scrollHeight; // Auto-scroll
-        }
-
-        // Unlock the developer console after entering the correct password
-        document.getElementById('unlockConsoleBtn').addEventListener('click', function () {
-            const password = document.getElementById('consolePassword').value;
-            if (password === '2010') {
-                document.getElementById('devConsole').style.display = 'block';
-                logToConsole('Developer Console Unlocked');
-            } else {
-                logToConsole('Incorrect Password');
-            }
-        });
-
-        // Fetch Roblox profile data
-        document.getElementById('fetchButton').addEventListener('click', function () {
-            let username = document.getElementById('username').value;
-            logToConsole(`Fetching data for username: ${username}`);
-
-            if (!username) {
-                logToConsole('Please enter a valid username');
-                return;
-            }
-
-            const apiUrl = `https://users.roblox.com/v1/usernames/users?usernames=${username}`;
-
-            fetch(apiUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        logToConsole(`Error: ${response.status} - ${response.statusText}`);
-                        return;
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data && data.data && data.data.length > 0) {
-                        const user = data.data[0];
-                        logToConsole('Data fetched successfully');
-                        logToConsole(`Display Name: ${user.displayName}`);
-                        logToConsole(`Username: ${user.username}`);
-                        logToConsole(`Avatar URL: ${user.avatarUrl}`);
-                    } else {
-                        logToConsole('User not found');
-                    }
-                })
-                .catch(error => {
-                    logToConsole('Error fetching data');
-                    console.error('Error:', error);
-                });
-        });
-    </script>
-
+    <script src="script.js"></script>
 </body>
 </html>
